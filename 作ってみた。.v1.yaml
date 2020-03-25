@@ -1,0 +1,231 @@
+openapi: 3.0.0
+info:
+  title: 作ってみた。
+  version: '1.0'
+  description: OpenApiをStopligteで作ってみた。
+  contact:
+    name: サポートページとかを書く。
+    url: 'http://hoge.hoge/'
+    email: test@example.com
+  license:
+    name: MIT
+    url: 'http://www.mit.edu/'
+servers:
+  - url: 'http://localhost:3100'
+    description: ローカル環境
+  - description: 開発環境
+    url: 'http://development'
+  - description: 本番環境
+    url: 'http://production'
+paths:
+  /staffs:
+    post:
+      summary: 社員マスタ登録
+      tags:
+        - 社員マスタ
+      responses:
+        '201':
+          description: OK
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/successSchema'
+                  - type: object
+                    properties:
+                      staff:
+                        allOf:
+                          - $ref: '#/components/schemas/installationID'
+                          - $ref: '#/components/schemas/staff'
+              examples:
+                example-1:
+                  value:
+                    status: 1
+                    message: Success
+                    staff:
+                      id: 1
+                      'no': '001'
+                      name: 田中太郎
+          headers:
+            Location:
+              schema:
+                type: string
+                default: '/staffs/{id}'
+              required: true
+      operationId: post-user
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/staff'
+            examples:
+              example-1:
+                value:
+                  'no': '001'
+                  name: 山田太郎
+      description: 社員マスタに新規登録を行う。
+      parameters:
+        - schema:
+            type: string
+            default: application/json
+          in: header
+          name: Content-Type
+          description: ''
+          required: true
+    get:
+      summary: 社員マスタ一覧
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/successSchema'
+                  - type: object
+                    properties:
+                      staff:
+                        type: array
+                        items:
+                          allOf:
+                            - $ref: '#/components/schemas/installationID'
+                            - $ref: '#/components/schemas/staff'
+              examples:
+                example-1:
+                  value:
+                    status: 1
+                    message: Success
+                    staff:
+                      - id: 1
+                        'no': '001'
+                        name: 田中太郎
+                      - id: 2
+                        'no': '002'
+                        name: 山田次郎
+      operationId: get-staffs
+      description: 社員マスタに登録されている、有効な社員を全て取得する。
+      parameters: []
+      tags:
+        - 社員マスタ
+  '/staffs/{id}':
+    parameters:
+      - schema:
+          type: string
+        name: id
+        in: path
+        required: true
+    get:
+      summary: 社員マスタ取得
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/successSchema'
+                  - type: object
+                    properties:
+                      staff:
+                        allOf:
+                          - $ref: '#/components/schemas/installationID'
+                          - $ref: '#/components/schemas/staff'
+              examples:
+                example-1:
+                  value:
+                    status: 1
+                    message: Success
+                    staff:
+                      id: 1
+                      'no': '001'
+                      name: 田中太郎
+      operationId: get-staffs-id
+      description: '社員マスタに登録されている、{id}を持つ社員を取得する。'
+      tags:
+        - 社員マスタ
+components:
+  schemas:
+    staff:
+      title: staff
+      type: object
+      description: 社員マスタ
+      x-tags:
+        - マスタ
+      x-examples:
+        example-1:
+          id: 1
+          'no': '001'
+          name: 田中太郎
+      properties:
+        'no':
+          type: string
+          description: 社員ナンバー
+          deprecated: true
+          example: '001'
+          minLength: 1
+          maxLength: 10
+          pattern: '[0-9]'
+        name:
+          type: string
+          description: 社員名
+          example: 山田太郎
+          minLength: 1
+          maxLength: 10
+      required:
+        - 'no'
+        - name
+    installationID:
+      title: installationID
+      type: object
+      properties:
+        id:
+          type: integer
+          description: プライマリキー
+          deprecated: true
+          format: int64
+          example: 1
+          minimum: 1
+          maximum: 4294967295
+      required:
+        - id
+      x-examples:
+        example-1:
+          id: 1
+        example-2:
+          id: 2
+      description: ''
+    successSchema:
+      title: successSchema
+      type: object
+      properties:
+        status:
+          type: integer
+          enum:
+            - 1
+            - 2
+            - 3
+          format: int32
+          description: ステータス
+        message:
+          type: string
+          default: Success
+          example: Success
+          description: メッセージ
+      required:
+        - status
+        - message
+  securitySchemes: {}
+  headers:
+    X-RateLimit-Limit:
+      description: 共通ヘッダー的なやつ。
+      schema:
+        type: integer
+    X-RateLimit-Remaining:
+      schema:
+        type: integer
+      description: The number of requests left for the time window.
+    X-RateLimit-Reset:
+      schema:
+        type: string
+        format: date-time
+      description: The UTC date/time at which the current rate limit window resets.
